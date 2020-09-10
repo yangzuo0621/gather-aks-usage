@@ -101,6 +101,8 @@ func createCountCommand() *cobra.Command {
 				return err
 			}
 
+			log.Println("Finish")
+
 			return ioutil.WriteFile(jsonFile, b.Bytes(), 0644)
 		},
 	}
