@@ -79,7 +79,7 @@ func (c *buildClient) AnalyzeUnderlayTypeFromLogs(ctx context.Context, buildID i
 
 	logID := -1
 	for _, record := range *timeline.Records {
-		if *record.Name == "Set underlay type" {
+		if *record.Name == "Set underlay type" && record.Log != nil {
 			logID = *record.Log.Id
 			break
 		}
