@@ -12,6 +12,7 @@ import (
 
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
+	"github.com/spf13/cobra"
 )
 
 const (
@@ -23,60 +24,99 @@ const (
 	aksUnderlayType = "AKS_CLUSTER"
 )
 
-var datas []Data
+var (
+	datas    []Data
+	jsonFile string
+)
 
 func main() {
-	conn, err := getPATConnection(organization)
-	handleError(err)
+	log.SetOutput(os.Stdout)
+	command := &cobra.Command{
+		Use: "gather-aks-usage",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if _, err := os.Stat(jsonFile); os.IsNotExist(err) {
+				log.Fatalf("%v", err)
+				return err
+			}
 
-	ctx := context.Background()
+			conn, err := getPATConnection(organization)
+			if err != nil {
+				log.Fatalf("%v", err)
+				return err
+			}
 
-	client, err := getBuildClient(ctx, conn)
-	handleError(err)
+			ctx := context.Background()
 
-	file, _ := ioutil.ReadFile("result.json")
-	json.Unmarshal(file, &datas)
+			client, err := getBuildClient(ctx, conn)
+			if err != nil {
+				log.Fatalf("%v", err)
+				return err
+			}
 
-	for index := range datas {
-		builds, err := getTopBuildsForPipeline(ctx, client, project, datas[index].PipelineID)
-		handleError(err)
+			file, _ := ioutil.ReadFile(jsonFile)
+			json.Unmarshal(file, &datas)
 
-		for _, b := range builds {
-			if *b.Status == build.BuildStatusValues.Completed {
-				underlayType, err := analyzeUnderlayTypeFromLogs(ctx, client, project, *b.Id)
-				handleError(err)
-
-				if underlayType == aksUnderlayType {
-					if datas[index].Builds == nil {
-						datas[index].Builds = make(map[int]BuildInfo)
-					}
-
-					if _, ok := datas[index].Builds[*b.Id]; !ok {
-						datas[index].Builds[*b.Id] = BuildInfo{
-							BuildID:      *b.Id,
-							UnderlayType: underlayType,
-							Result:       string(*b.Result),
-							Time:         b.FinishTime.Time.Local().Format("2006-01-02"),
-							URL:          fmt.Sprintf("https://dev.azure.com/%s/%s/_build/results?buildId=%d&view=results", organization, project, *b.Id),
-						}
-						fmt.Println("not exist, add it")
-					}
+			for index := range datas {
+				builds, err := getTopBuildsForPipeline(ctx, client, project, datas[index].PipelineID)
+				if err != nil {
+					log.Fatalf("%v", err)
+					return err
 				}
 
-				fmt.Println("BuildNumber=", *b.Id, ", status=", *b.Status, ", result=", *b.Result, ", type=", underlayType, ", pipelineID=", datas[index].PipelineID)
-			} else {
-				fmt.Println("BuildNumber=", *b.Id, ", status=", *b.Status, "skip it")
+				for _, b := range builds {
+					if *b.Status == build.BuildStatusValues.Completed {
+						underlayType, err := analyzeUnderlayTypeFromLogs(ctx, client, project, *b.Id)
+						if err != nil {
+							log.Fatalf("%v", err)
+							return err
+						}
+
+						if underlayType == aksUnderlayType {
+							if datas[index].Builds == nil {
+								datas[index].Builds = make(map[int]BuildInfo)
+							}
+
+							if _, ok := datas[index].Builds[*b.Id]; !ok {
+								datas[index].Builds[*b.Id] = BuildInfo{
+									BuildID:      *b.Id,
+									UnderlayType: underlayType,
+									Result:       string(*b.Result),
+									Time:         b.FinishTime.Time.Local().Format("2006-01-02"),
+									URL:          fmt.Sprintf("https://dev.azure.com/%s/%s/_build/results?buildId=%d&view=results", organization, project, *b.Id),
+								}
+								log.Println("not exist, add it")
+							}
+						}
+
+						log.Println("BuildNumber=", *b.Id, ", status=", *b.Status, ", result=", *b.Result, ", type=", underlayType, ", pipelineID=", datas[index].PipelineID)
+					} else {
+						log.Println("BuildNumber=", *b.Id, ", status=", *b.Status, "skip it")
+					}
+				}
 			}
-		}
+
+			b := new(bytes.Buffer)
+			encoder := json.NewEncoder(b)
+			encoder.SetEscapeHTML(false)
+			encoder.SetIndent("", " ")
+			err = encoder.Encode(datas)
+			if err != nil {
+				return err
+			}
+
+			log.Println("Finish")
+
+			return ioutil.WriteFile(jsonFile, b.Bytes(), 0644)
+		},
 	}
 
-	b := new(bytes.Buffer)
-	encoder := json.NewEncoder(b)
-	encoder.SetEscapeHTML(false)
-	encoder.SetIndent("", " ")
-	encoder.Encode(datas)
+	command.Flags().StringVar(&jsonFile, "file", "", "model file")
+	command.MarkFlagRequired("file")
 
-	_ = ioutil.WriteFile("result.json", b.Bytes(), 0644)
+	if err := command.Execute(); err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
 }
 
 func getPATConnection(organization string) (*azuredevops.Connection, error) {
