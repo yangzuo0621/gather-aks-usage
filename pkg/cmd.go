@@ -28,6 +28,7 @@ func CreateCommand() *cobra.Command {
 	}
 
 	c.AddCommand(createCountCommand())
+	c.AddCommand(createOutputCommand())
 	return c
 }
 
@@ -107,5 +108,39 @@ func createCountCommand() *cobra.Command {
 	c.Flags().IntVar(&topN, "top", 0, "top N records")
 	c.MarkFlagRequired("file")
 
+	return c
+}
+
+func createOutputCommand() *cobra.Command {
+	var (
+		jsonFile string
+		datas    []Data
+	)
+
+	c := &cobra.Command{
+		Use:          "output",
+		SilenceUsage: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if _, err := os.Stat(jsonFile); os.IsNotExist(err) {
+				return err
+			}
+			file, _ := ioutil.ReadFile(jsonFile)
+			json.Unmarshal(file, &datas)
+
+			for _, data := range datas {
+				fmt.Println("============================")
+				fmt.Printf("| %d | %s |  \n", data.PipelineID, data.Name)
+				for _, v := range data.Builds {
+					fmt.Printf("| %d | %s | %s | %s | %-9s |\n", v.BuildID, v.UnderlayType, v.Time, v.URL, v.Result)
+				}
+				fmt.Println()
+			}
+
+			return nil
+		},
+	}
+
+	c.Flags().StringVar(&jsonFile, "file", "", "model file")
+	c.MarkFlagRequired("file")
 	return c
 }
