@@ -43,6 +43,7 @@ func createCountCommand() *cobra.Command {
 		Use:          "count",
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			log.SetOutput(os.Stdout)
 			ctx := context.Background()
 
 			if _, err := os.Stat(jsonFile); os.IsNotExist(err) {
