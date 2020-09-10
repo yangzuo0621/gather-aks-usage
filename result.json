@@ -1,0 +1,38 @@
+[
+	{
+		"name": "E2Ev2 AKS RP Check-In Test (Default Toggle)",
+		"pipeline_id": 114250
+	},
+	{
+		"name": "E2Ev2 AKS RP Master Validation",
+		"pipeline_id": 138746
+	},
+	{
+		"name": "E2Ev2 AKS RP AAD Advanced Test (Default Toggle)",
+		"pipeline_id": 145769
+	},
+	{
+		"name": "E2Ev2 AKS RP Check-In Test (Default Toggle)-Azure CNI",
+		"pipeline_id": 144095
+	},
+	{
+		"name": "E2Ev2 AKS RP Check-In Test (Default Toggle)-GPU",
+		"pipeline_id": 140740
+	},
+	{
+		"name": "E2Ev2 AKS RP Check-In Test (Default Toggle, EastUS)",
+		"pipeline_id": 150829
+	},
+	{
+		"name": "E2Ev2 AKS RP Network Advanced Test (Default Toggle)",
+		"pipeline_id": 139038
+	},
+	{
+		"name": "E2Ev2 AKS RP Windows Advanced Test (Default Toggle)",
+		"pipeline_id": 134037
+	},
+	{
+		"name": "E2Ev2 AKS RP Egress Lockdown Test (Default Toggle)",
+		"pipeline_id": 141469
+	}
+]
