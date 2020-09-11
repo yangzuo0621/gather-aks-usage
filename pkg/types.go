@@ -12,6 +12,12 @@ type Data struct {
 	Builds     map[int]BuildInfo `json:"builds,omitempty"`
 }
 
+type BuildData struct {
+	Name       string      `json:"name"`
+	PipelineID int         `json:"pipeline_id"`
+	Builds     []BuildInfo `json:"builds,omitempty"`
+}
+
 type BuildInfo struct {
 	BuildID      int    `json:"build_id"`
 	UnderlayType string `json:"underlay_type"`
