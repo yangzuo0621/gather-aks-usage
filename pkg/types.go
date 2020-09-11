@@ -6,12 +6,6 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 )
 
-type Data struct {
-	Name       string            `json:"name"`
-	PipelineID int               `json:"pipeline_id"`
-	Builds     map[int]BuildInfo `json:"builds,omitempty"`
-}
-
 type BuildData struct {
 	Name       string      `json:"name"`
 	PipelineID int         `json:"pipeline_id"`
