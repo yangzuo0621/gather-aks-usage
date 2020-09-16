@@ -6,12 +6,14 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
 )
 
+// BuildData encapsulates pipeline and its builds
 type BuildData struct {
 	Name       string      `json:"name"`
 	PipelineID int         `json:"pipeline_id"`
 	Builds     []BuildInfo `json:"builds,omitempty"`
 }
 
+// BuildInfo encapsulates build information
 type BuildInfo struct {
 	BuildID      int    `json:"build_id"`
 	UnderlayType string `json:"underlay_type"`
@@ -20,6 +22,7 @@ type BuildInfo struct {
 	URL          string `json:"url"`
 }
 
+// BuildClient interface for manuplate pipeline
 type BuildClient interface {
 	// GetTopBuildsForPipeline return top N Builds for specified pipeline
 	GetTopBuildsForPipeline(ctx context.Context, pipelineID int, topN int) ([]build.Build, error)
