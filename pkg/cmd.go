@@ -68,6 +68,7 @@ func createCountCommand() *cobra.Command {
 				for _, b := range builds {
 					if *b.Status == build.BuildStatusValues.Completed {
 						underlayType, _ := client.AnalyzeUnderlayTypeFromLogs(ctx, *b.Id)
+						cluster, _ := client.AnalyzeClusterFromLogs(ctx, *b.Id)
 
 						if underlayType == aksUnderlayType {
 							if datas[index].Builds == nil {
@@ -89,12 +90,13 @@ func createCountCommand() *cobra.Command {
 									Result:       string(*b.Result),
 									Time:         b.FinishTime.Time.Local().Format("2006-01-02"),
 									URL:          fmt.Sprintf("https://dev.azure.com/%s/%s/_build/results?buildId=%d&view=results", organization, project, *b.Id),
+									Cluster:      cluster,
 								})
 								log.Println("not exist, add it")
 							}
 						}
 
-						log.Println("BuildNumber=", *b.Id, ", status=", *b.Status, ", result=", *b.Result, ", type=", underlayType, ", pipelineID=", datas[index].PipelineID)
+						log.Println("BuildNumber=", *b.Id, ", status=", *b.Status, ", result=", *b.Result, ", type=", underlayType, ", pipelineID=", datas[index].PipelineID, "cluster=", cluster)
 					} else {
 						log.Println("BuildNumber=", *b.Id, ", status=", *b.Status, "skip it")
 					}

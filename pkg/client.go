@@ -108,6 +108,49 @@ func (c *buildClient) AnalyzeUnderlayTypeFromLogs(ctx context.Context, buildID i
 	return underlayType, nil
 }
 
+func (c *buildClient) AnalyzeClusterFromLogs(ctx context.Context, buildID int) (string, error) {
+	client, err := c.getBuildClient(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	timeline, err := client.GetBuildTimeline(ctx, build.GetBuildTimelineArgs{
+		Project: toStringPtr(c.project),
+		BuildId: toIntPtr(buildID),
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("AnalyzeClusterFromLogs: %v", err)
+	}
+
+	logID := -1
+	for _, record := range *timeline.Records {
+		if *record.Name == "ChooseCluster" && record.Log != nil {
+			logID = *record.Log.Id
+			break
+		}
+	}
+
+	var cluster string
+	if logID != -1 {
+		lines, _ := client.GetBuildLogLines(ctx, build.GetBuildLogLinesArgs{
+			Project: toStringPtr(c.project),
+			BuildId: toIntPtr(buildID),
+			LogId:   toIntPtr(logID),
+		})
+
+		for _, s := range *lines {
+			index := strings.Index(s, "Choosed")
+			if index != -1 {
+				cluster = s[index+len("Choosed")+1:]
+				break
+			}
+		}
+	}
+
+	return cluster, nil
+}
+
 func newBuildClient(org string, project string) BuildClient {
 	return &buildClient{
 		organization: org,
