@@ -20,6 +20,7 @@ type BuildInfo struct {
 	Result       string `json:"result"`
 	Time         string `json:"time"`
 	URL          string `json:"url"`
+	Cluster      string `json:"cluster"`
 }
 
 // BuildClient interface for manuplate pipeline
@@ -29,4 +30,7 @@ type BuildClient interface {
 
 	// AnalyzeUnderlayTypeFromLogs analyzes the underlay type from build logs
 	AnalyzeUnderlayTypeFromLogs(ctx context.Context, buildID int) (string, error)
+
+	// AnalyzeClusterFromLogs analyzes the cluster build choosed
+	AnalyzeClusterFromLogs(ctx context.Context, buildID int) (string, error)
 }
