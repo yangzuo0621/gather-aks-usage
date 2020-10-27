@@ -151,7 +151,7 @@ func createOutputCommand() *cobra.Command {
 				})
 
 				for _, v := range builds {
-					fmt.Printf("| %d | %s | %s | %s | %-9s |\n", v.BuildID, v.UnderlayType, v.Time, v.URL, v.Result)
+					fmt.Printf("| %d | %s | %s | %s | %-9s | %s |\n", v.BuildID, v.UnderlayType, v.Time, v.URL, v.Result, v.Cluster)
 				}
 				fmt.Println()
 			}
