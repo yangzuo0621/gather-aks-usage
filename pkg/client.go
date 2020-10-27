@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/build"
@@ -49,9 +50,11 @@ func (c *buildClient) GetTopBuildsForPipeline(ctx context.Context, pipelineID in
 		return nil, err
 	}
 
+	twoDaysAgo := time.Now().AddDate(0, -2, 0)
 	builds, err := client.GetBuilds(ctx, build.GetBuildsArgs{
 		Project:     toStringPtr(c.project),
 		Definitions: &[]int{pipelineID},
+		MinTime:     &azuredevops.Time{Time: twoDaysAgo},
 		Top:         toIntPtr(topN),
 	})
 
